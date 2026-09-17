@@ -1,0 +1,40 @@
+body{
+    margin-top: 0;
+    background-color: #a39a9a;
+    background-image:url(../img/jhonny.jpg);
+    background-repeat: no-repeat;
+    background-position: top;
+    background-size: cover;
+
+}
+nav{
+background-color: #bbb7b7;
+}
+
+nav ul{
+list-style: none;
+margin: 0;
+display: flex;
+justify-content: center;
+}
+nav ul li{
+    margin-right: 20px;
+}
+nav ul  li a{
+display:inline-block ;
+color: #0a0a0a;
+text-decoration: none;
+font-weight: bold;
+padding: 10px 20px;
+border-radius: 20px;
+ background-color:rgb(243, 245, 245) ;
+}
+nav ul li a:hover{
+    color: #36cf9e;
+    background-color: #2587ff;
+}
+.titulo{
+
+    color:rgba(247, 249, 249, 0.42);
+    text-align: center;
+}
