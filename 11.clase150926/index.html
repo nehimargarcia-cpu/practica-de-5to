@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Estudiantes</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f4f7f6; }
+        .box { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        input, select, button { padding: 8px; margin: 5px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #007bff; color: white; }
+        .alert { position: fixed; top: 20px; right: 20px; padding: 12px; color: white; font-weight: bold; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <h2>Control de Estudiantes</h2>
+
+    <!-- Registro -->
+    <div class="box">
+        <strong>Añadir:</strong>
+        <input type="text" id="nom" placeholder="Nombre" required>
+        <input type="text" id="ape" placeholder="Apellido" required>
+        <select id="cur">
+            <option>1ro Secundaria</option><option>2do Secundaria</option>
+            <option>3ro Secundaria</option><option>4to Secundaria</option><option>5to Secundaria</option>
+        </select>
+        <input type="date" id="fec" required>
+        <button onclick="agregar()" style="background: #28a745; color: white; cursor: pointer;">Agregar Alumno</button>
+    </div>
+
+    <!-- Buscador -->
+    <div class="box">
+        <strong>Buscar por:</strong>
+        <select id="criterio">
+            <option value="1">Nombre</option><option value="2">Apellido</option>
+            <option value="3">Curso</option><option value="4">Fecha Nac.</option><option value="0">Número</option>
+        </select>
+        <input type="text" id="buscar" onkeyup="filtrar()" placeholder="Escribe para buscar...">
+    </div>
+
+    <div id="contador" style="font-weight: bold; margin-bottom: 10px; color: #0d47a1;">Total: 0 alumnos</div>
+
+    <!-- Tabla -->
+    <table id="tabla">
+        <thead>
+            <tr><th>Nº</th><th>Nombre</th><th>Apellido</th><th>Curso</th><th>Fecha Nac.</th><th>Acción</th></tr>
+        </thead>
+        <tbody id="cuerpo"></tbody>
+    </table>
+
+    <script>
+        var KEY = 'estudiantes_corto';
+        var lista = JSON.parse(localStorage.getItem(KEY)) || [];
+        var errorMostrado = false;
+
+        function aviso(txt, tipo) {
+            var el = document.createElement('div');
+            el.className = 'alert';
+            el.style.background = tipo === 'ok' ? '#28a745' : '#dc3545';
+            el.textContent = txt;
+            document.body.appendChild(el);
+            setTimeout(function() { el.remove(); }, 2500);
+        }
+
+        function render() {
+            var cuerpo = document.getElementById('cuerpo');
+            cuerpo.innerHTML = '';
+            
+            lista.forEach(function(est) {
+                var tr = document.createElement('tr');
+                
+                var d = est.fec ? est.fec.split('-').reverse().join('/') : '';
+                var datos = [est.num, est.nom, est.ape, est.cur, d];
+                
+                datos.forEach(function(texto) {
+                    var td = document.createElement('td');
+                    td.textContent = texto;
+                    tr.appendChild(td);
+                });
+
+                var tdBtn = document.createElement('td');
+                var btn = document.createElement('button');
+                btn.textContent = 'X';
+                btn.style.background = '#dc3545'; btn.style.color = 'white'; btn.style.cursor = 'pointer';
+                btn.onclick = function() {
+                    lista = lista.filter(function(e) { return e.num !== est.num; });
+                    render();
+                };
+                tdBtn.appendChild(btn);
+                tr.appendChild(tdBtn);
+                cuerpo.appendChild(tr);
+            });
+
+            localStorage.setItem(KEY, JSON.stringify(lista));
+            filtrar();
+        }
+
+        function agregar() {
+            var n = document.getElementById('nom').value.trim();
+            var a = document.getElementById('ape').value.trim();
+            var f = document.getElementById('fec').value;
+            
+            if(!n || !a || !f) return alert('Por favor, llena todos los campos.');
+
+            var maxId = 0;
+            lista.forEach(function(e) { if(e.num > maxId) maxId = e.num; });
+
+            lista.push({ num: maxId + 1, nom: n, ape: a, cur: document.getElementById('cur').value, fec: f });
+            render();
+            aviso('✅ Estudiante agregado', 'ok');
+
+            document.getElementById('nom').value = '';
+            document.getElementById('ape').value = '';
+            document.getElementById('fec').value = '';
+        }
+
+        function filtrar() {
+            var val = document.getElementById('buscar').value.toLowerCase().trim();
+            var col = parseInt(document.getElementById('criterio').value, 10);
+            var filas = document.getElementById('cuerpo').getElementsByTagName('tr');
+            var cont = 0;
+
+            for (var i = 0; i < filas.length; i++) {
+                var celda = filas[i].getElementsByTagName('td')[col];
+                if (celda) {
+                    if (celda.textContent.toLowerCase().indexOf(val) !== -1) {
+                        filas[i].style.display = '';
+                        cont++;
+                    } else {
+                        filas[i].style.display = 'none';
+                    }
+                }
+            }
+
+            document.getElementById('contador').textContent = val === '' ? 'Total: ' + lista.length + ' alumnos' : 'Encontrados: ' + cont;
+
+            if (cont === 0 && val !== '') {
+                if (!errorMostrado) { aviso('❌ No encontrado', 'err'); errorMostrado = true; }
+            } else {
+                errorMostrado = false;
+            }
+        }
+
+        render();
+    </script>
+</body>
+</html>
